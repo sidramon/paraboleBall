@@ -13,13 +13,18 @@ let ball
 class Ball {
     constructor(startPos=0){
         this.x = startPos
-        this.y = 0
+        this.y = 30
         this.size = 30
         this.color = "red"
+        this.maxX
+        this.setMaxX()
     }
 
     move() {
-        this.x += 9.81/Math.abs(Math.tan(startAngle))
+        this.x = Math.min(
+                this.x + 9.81/Math.abs(Math.tan(startAngle)),
+                this.maxX
+            )
         this.y = Math.min(-1 * (
             startPosY*-1 + 
             Math.tan(startAngle) * this.x - 
@@ -31,9 +36,9 @@ class Ball {
                 )
             ) 
             * Math.pow(this.x, 2)
-        ), canvas.height - ball.size)         
+        ), canvas.height - ball.size)      
 
-        console.log("[" + this.x + ", " + this.y + "]")
+        console.log("[" + this.x + ", " + this.y + "] ")
     }
 
     draw(){
@@ -43,6 +48,35 @@ class Ball {
         ctx.fill();
         ctx.stroke();
         ctx.closePath();
+    }
+
+    setMaxX() {
+        function equationParabolique(x, size) {
+            return Math.min(-1 * (
+                startPosY*-1 + 
+                Math.tan(startAngle) * x - 
+                (
+                    9.81 / 
+                    (
+                        2 * Math.pow(startSpeed, 2) * 
+                        Math.pow(Math.cos(startAngle), 2)
+                    )
+                ) 
+                * Math.pow(x, 2)
+            ), canvas.height - size)
+        }
+    
+        // Initialisation des variables
+        let x = 0
+        let increment = 1
+    
+        // Recherche du zéro le plus élevé
+        do {
+            x += increment;
+        } while (equationParabolique(x, this.size) < canvas.height - this.size)
+        
+        this.maxX = x
+        console.log(x)
     }
 }
 
@@ -61,7 +95,7 @@ document.addEventListener('DOMContentLoaded', function() {
     startPosY = canvas.height-ball.size
     startSpeed = parseFloat(startSpeedInput.value);
     startAngle = parseFloat(startAngleInput.value);
-    ticTimeout = 1
+    ticTimeout = 0
 
     document.getElementById("settingsForm").addEventListener('input', function() {
         // Convertit les valeurs en nombres
@@ -83,7 +117,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 async function startSimulation(){
-    ball = new Ball(startPosX)
+    ball = new Ball()
 
     while(true){
         ctx.clearRect(0, 0, canvas.width, canvas.height);
