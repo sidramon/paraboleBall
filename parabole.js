@@ -97,6 +97,8 @@ document.addEventListener('DOMContentLoaded', function() {
     startAngle = parseFloat(startAngleInput.value);
     ticTimeout = 0
 
+    drawArrow()
+
     document.getElementById("settingsForm").addEventListener('input', function() {
         // Convertit les valeurs en nombres
         let speedValue = parseFloat(startSpeedInput.value) || 1; // Utilise 1 si la valeur n'est pas définie
@@ -113,6 +115,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // Utilise les valeurs mises à jour dans la simulation
         startSpeed = speedValue;
         startAngle = angleValue * Math.PI / 180;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawArrow()
     });
 });
 
@@ -125,6 +130,8 @@ async function startSimulation(){
         ball.move()
         ball.draw()
 
+        drawArrow()
+
         await new Promise(resolve => setTimeout(resolve, ticTimeout));
 
         if(ball.y >= canvas.height - ball.size) {
@@ -135,4 +142,27 @@ async function startSimulation(){
             break
         }
     }
+}
+
+function drawArrow(){
+    const arrowSize = startSpeed;
+    const arrowX = 0;
+    const arrowY = canvas.height - ball.size;
+    const arrowEndX = arrowX + arrowSize * Math.cos(startAngle);
+    const arrowEndY = arrowY - arrowSize * Math.sin(startAngle);
+
+    ctx.beginPath();
+    ctx.moveTo(arrowX, arrowY);
+    ctx.lineTo(arrowEndX, arrowEndY);
+    
+    const arrowTipSize = 10;
+    const arrowTipAngle = Math.PI / 8;
+    
+    ctx.lineTo(arrowEndX - arrowTipSize * Math.cos(startAngle - arrowTipAngle), arrowEndY + arrowTipSize * Math.sin(startAngle - arrowTipAngle));
+    
+    ctx.lineTo(arrowEndX - arrowTipSize * Math.cos(startAngle + arrowTipAngle), arrowEndY + arrowTipSize * Math.sin(startAngle + arrowTipAngle));
+    
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 4;
+    ctx.stroke();
 }
